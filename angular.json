@@ -55,7 +55,7 @@
           "defaultConfiguration": "production"
         },
         "serve": {
-          "options": { "ssl": false },
+          "options": { "ssl": false, "proxyConfig": "src/proxy.conf.json" },
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {

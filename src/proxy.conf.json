@@ -1,0 +1,6 @@
+{
+  "/api": {
+    "target": "http://data.fixer.io/api/",
+    "secure": false
+  }
+}
