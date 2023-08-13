@@ -1,0 +1,79 @@
+<div class="container-fluid">
+  <h1 class="m-2" *ngIf="pageType === 'home'">{{title}}</h1>
+  <div class="m-2 d-flex justify-content-between" *ngIf="pageType === 'detalis'">
+    <h1>{{title}}</h1>
+    <button class="btn btn-primary btn-lg h-100" routerLink="/">Back to Home</button>
+  </div>
+  <form (ngSubmit)="onSubmit()" [formGroup]="ConvertCurrencyFG">
+    <div class="row m-2 inputs-container">
+      <div class="col-5 d-flex flex-column p-3">
+        <div>
+          <label for="amount">
+            <h3>Amount</h3>
+          </label>
+          <input id="amount" type="number" class="form-control text-center" formControlName="amount"
+            (input)="onValuesChange()">
+          <span *ngIf="fgControls.amount.invalid && (fgControls.amount.dirty || fgControls.amount.touched)"
+            class="alert" class="invalid-input">Amount Required</span>
+        </div>
+        <div style="flex: 1;"></div>
+        <div>
+
+          <div class="form-control text-center"> 1 {{fgControls.fromCurr.value}} =
+            {{1 * convertToRate |
+            currency:fgControls.toCurr.value!:""}} {{fgControls.toCurr.value!}}</div>
+
+        </div>
+      </div>
+      <div class="col-7 d-flex flex-column p-3">
+        <div class="row" *ngIf="rates.length > 0">
+          <div class="col-5">
+            <label for="fromCurr">
+              <h3>From</h3>
+            </label>
+            <ng-select [items]="rates" bindLabel="currencyCode" bindValue="currencyCode" formControlName="fromCurr"
+              [clearable]="false" appendTo="body" (change)="onValuesChange()">
+            </ng-select>
+            <span *ngIf="fgControls.fromCurr.invalid && (fgControls.fromCurr.dirty || fgControls.fromCurr.touched)"
+              class="alert" class="invalid-input">Required</span>
+          </div>
+          <div class="col-2 d-flex justify-content-center align-items-center">
+            <div class="img-fluid" (click)="swapValues()">
+              <img src="../../../../assets/img/exchange.png" alt="Exvhange Arrows Icon">
+            </div>
+          </div>
+          <div class="col-5">
+            <label for="toCurr">
+              <h3>To</h3>
+            </label>
+            <ng-select [items]="rates" bindLabel="currencyCode" bindValue="currencyCode" formControlName="toCurr"
+              [clearable]="false" appendTo="body" (change)="findToExchangeRate();onValuesChange();">
+            </ng-select>
+            <span *ngIf="fgControls.toCurr.invalid && (fgControls.toCurr.dirty || fgControls.toCurr.touched)"
+              class="alert" class="invalid-input">Required</span>
+          </div>
+        </div>
+        <div class="w-100 my-3">
+          <button class="btn btn-lg btn-primary w-100" type="submit">
+            Submit
+          </button>
+        </div>
+        <div class="conversion_result row" *ngIf="pageType === 'home'">
+          <div class="col-md-6 col-12">
+            <h1 class="form-control text-center m-0"> {{ conversionResult ? (conversionResult |
+              currency:fgControls.toCurr.value!:"") : "--,--"}} {{fgControls.toCurr.value!}}
+            </h1>
+          </div>
+          <div class="col-md-6 col-12">
+            <button class="btn btn-lg btn-primary w-100 h-100" (click)="goToDetails()">More Details</button>
+          </div>
+        </div>
+        <div class="conversion_result" *ngIf="pageType === 'detalis'">
+          <h1 class="form-control text-center m-0"> {{ conversionResult ? (conversionResult |
+            currency:fgControls.toCurr.value!:"") : "--,--"}} {{fgControls.toCurr.value!}}
+          </h1>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

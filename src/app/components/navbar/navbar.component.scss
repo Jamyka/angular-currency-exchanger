@@ -15,12 +15,26 @@
   background-color: #1976d2;
   color: white;
   font-weight: 600;
+  .logo-container {
+    a {
+      width: fit-content;
+    }
+  }
   .nav-link {
     color: #fff;
     &:hover {
       color: #ccc;
       text-decoration: underline;
       cursor: pointer;
+    }
+    &.active {
+      background-color: #ccc;
+      color: #333;
+      border-radius: 8px;
+      -webkit-border-radius: 8px;
+      -moz-border-radius: 8px;
+      -ms-border-radius: 8px;
+      -o-border-radius: 8px;
     }
   }
 }

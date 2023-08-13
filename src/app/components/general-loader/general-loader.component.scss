@@ -1,0 +1,75 @@
+.card-preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  background-color: rgba(var(--bs-light-rgb), 0.6);
+  z-index: 9999;
+  animation: fade 1s cubic-bezier(0, 0.2, 0.8, 1) reverse;
+  -webkit-animation: fade 1s cubic-bezier(0, 0.2, 0.8, 1) reverse;
+  transition: all 250px ease-in-out;
+  -webkit-transition: all 250px ease-in-out;
+  -moz-transition: all 250px ease-in-out;
+  -ms-transition: all 250px ease-in-out;
+  -o-transition: all 250px ease-in-out;
+}
+.lds-ripple {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+.lds-ripple div {
+  position: absolute;
+  border: 4px solid #0d6efd;
+  opacity: 1;
+  border-radius: 50%;
+  animation: lds-ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+.lds-ripple div:nth-child(2) {
+  animation-delay: -0.5s;
+}
+@keyframes lds-ripple {
+  0% {
+    top: 36px;
+    left: 36px;
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
+  4.9% {
+    top: 36px;
+    left: 36px;
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
+  5% {
+    top: 36px;
+    left: 36px;
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    top: 0px;
+    left: 0px;
+    width: 72px;
+    height: 72px;
+    opacity: 0;
+  }
+}
+
+@keyframes fade {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}

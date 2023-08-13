@@ -5,10 +5,12 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NavbarComponent } from './components/navbar/navbar.component';
+import { HttpClientModule } from '@angular/common/http';
+import { GeneralLoaderComponent } from './components/general-loader/general-loader.component';
 
 @NgModule({
-  declarations: [AppComponent, NavbarComponent],
-  imports: [BrowserModule, AppRoutingModule, NgbModule],
+  declarations: [AppComponent, NavbarComponent, GeneralLoaderComponent],
+  imports: [BrowserModule, AppRoutingModule, NgbModule, HttpClientModule],
   providers: [],
   bootstrap: [AppComponent],
 })

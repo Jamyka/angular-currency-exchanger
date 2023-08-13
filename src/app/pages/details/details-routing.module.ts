@@ -1,12 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { EurUsdComponent } from './eur-usd/eur-usd.component';
-import { EurGbpComponent } from './eur-gbp/eur-gbp.component';
+import { DetailsComponent } from './details/details.component';
 
-const routes: Routes = [
-  { path: 'eur-usd', component: EurUsdComponent },
-  { path: 'eur-gbp', component: EurGbpComponent },
-];
+const routes: Routes = [{ path: '', component: DetailsComponent }];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],

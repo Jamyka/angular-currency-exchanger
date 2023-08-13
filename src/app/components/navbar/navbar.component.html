@@ -17,12 +17,12 @@
         <div [ngbCollapse]="!isNavbarCollapsed" class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto  mb-lg-0 justify-content-end w-100">
             <li class="nav-item">
-              <a class="nav-link" routerLink="/details/eur-usd">
+              <a class="nav-link" (click)="goToDetails('EUR','USD')" [routerLinkActive]="'active'">
                 EUR-USD
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" routerLink="/details/eur-gbp">
+              <a class="nav-link" (click)="goToDetails('EUR','GBP')" [routerLinkActive]="'active'">
                 EUR-GBP
               </a>
             </li>

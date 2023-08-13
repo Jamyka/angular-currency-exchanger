@@ -1,0 +1,17 @@
+<section class="homepage">
+  <app-conversion-form title="Currency Exchanger" pageType="home" (ratesChangeEvent)="setRatesValues($event)"
+    (valuesChangeEvent)="calculateAgainestPairs($event)"></app-conversion-form>
+  <div class="container-fluid ">
+    <div class="p-3">
+      <div class="row border p-2">
+        <div class="col-lg-4 col-md-3 col-12 text-center" *ngFor="let item of rates">
+          <h3 class="border rounded-3 p-3">{{formValues.toCurr! !== "EUR" ? ("1 " + formValues.fromCurr! + "=" +
+            (( 1 *
+            +item.exchangeRate!) | currency: item.currencyCode: '') + " " +item.currencyCode) : ("1 " +
+            formValues.fromCurr! +
+            "=" + (( 1 / +item.exchangeRate!) | currency: item.currencyCode: '') + " " +item.currencyCode)}}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
