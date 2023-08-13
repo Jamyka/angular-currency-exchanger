@@ -7,6 +7,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { ConversionFormComponent } from 'src/app/components/conversion-form/conversion-form.component';
 import { NgApexchartsModule } from 'ng-apexcharts';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 @NgModule({
   declarations: [DetailsComponent],
   imports: [
@@ -16,6 +17,7 @@ import { NgApexchartsModule } from 'ng-apexcharts';
     NgSelectModule,
     ConversionFormComponent,
     NgApexchartsModule,
+    NgbModule,
   ],
 })
 export class DetailsModule {}

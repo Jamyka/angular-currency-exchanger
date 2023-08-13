@@ -1,5 +1,6 @@
 <section class="homepage">
-  <app-conversion-form [title]="currencyName" pageType="detalis"></app-conversion-form>
+  <app-conversion-form [title]="currencyName" pageType="detalis" (valuesChangeEvent)="updateChartData($event)"
+    #chartObj></app-conversion-form>
   <div class="container-fluid ">
     <div class="p-3">
       <div class="row border p-2">
@@ -9,3 +10,17 @@
     </div>
   </div>
 </section>
+
+
+<ng-template #content let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title text-danger">Modal title</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body text-danger text-center">
+    {{errorMsg}}
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-danger" (click)="modal.close('Close click')">Close</button>
+  </div>
+</ng-template>

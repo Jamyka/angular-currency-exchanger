@@ -1,5 +1,7 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+
 import {
   ChartComponent,
   ApexAxisChartSeries,
@@ -8,6 +10,8 @@ import {
   ApexTitleSubtitle,
 } from 'ng-apexcharts';
 import { Subscription, forkJoin } from 'rxjs';
+import { reserved } from 'src/app/models/reservedWord';
+import { EventsService } from 'src/app/services/events.service';
 import { FixerService } from 'src/app/services/fixer.service';
 
 export type ChartOptions = {
@@ -23,11 +27,20 @@ export type ChartOptions = {
   styleUrls: ['./details.component.scss'],
 })
 export class DetailsComponent implements OnInit, OnDestroy {
-  @ViewChild('chart') chart!: ChartComponent;
+  @ViewChild('chartObj') chart!: ChartComponent;
+  @ViewChild('content') errModal!: NgbModalRef;
   public chartOptions!: Partial<ChartOptions>;
-  constructor(private route: ActivatedRoute, private api: FixerService) {}
+  constructor(
+    private route: ActivatedRoute,
+    private api: FixerService,
+    private eventService: EventsService,
+    private modalService: NgbModal
+  ) {}
   currencyName!: string;
+  errorMsg!: string;
   params!: any;
+  changedFromValue!: string;
+  changedToValue!: string;
   subscribes: Subscription[] = [];
 
   ngOnInit() {
@@ -35,7 +48,7 @@ export class DetailsComponent implements OnInit, OnDestroy {
       this.params = params;
     });
     this.getCurrFullName();
-    this.getCurrHistory();
+    this.getCurrHistory(this.params.fromCurr, this.params.toCurr);
 
     this.chartOptions = {
       series: [
@@ -47,6 +60,7 @@ export class DetailsComponent implements OnInit, OnDestroy {
       chart: {
         height: 350,
         type: 'line',
+        id: 'currChart',
       },
       title: {
         text: `${this.params.fromCurr} against ${this.params.toCurr}`,
@@ -77,12 +91,20 @@ export class DetailsComponent implements OnInit, OnDestroy {
   getCurrFullName() {
     const sub = this.api.getCurrFullName().subscribe({
       next: (res) => {
-        this.currencyName = `${this.params.toCurr} - ${
-          res.symbols[this.params.toCurr]
-        }`;
+        if (res.success) {
+          this.currencyName = `${this.params.toCurr} - ${
+            res.symbols[this.params.toCurr]
+          }`;
+        } else {
+          this.errorMsg = res.error.info;
+          this.openErrorModal(this.errModal);
+        }
+        this.eventService.broadcast(reserved.isLoading, false);
       },
       error: (err) => {
-        console.log(err);
+        this.errorMsg = err.message;
+        this.openErrorModal(this.errModal);
+        this.eventService.broadcast(reserved.isLoading, false);
       },
     });
     this.subscribes.push(sub);
@@ -109,28 +131,55 @@ export class DetailsComponent implements OnInit, OnDestroy {
     return lastDaysOfMonths;
   }
 
-  getCurrHistory() {
+  getCurrHistory(currFrom: string, currTo: string) {
+    this.eventService.broadcast(reserved.isLoading, true);
     const dates = this.getLastDaysOfLastYearMonths();
-    const observables = dates.map((date) =>
-      this.api.getCurrHistory(date as any, this.params.toCurr)
-    );
 
+    const observables = dates.map((date) =>
+      this.api.getCurrHistory(
+        date as any,
+        currFrom || this.params.fromCurr,
+        currTo
+      )
+    );
     const sub = forkJoin(observables).subscribe({
       next: (res) => {
-        this.chartOptions.series = [
-          {
-            data: res.map((item) => {
-              return item.rates[this.params.toCurr];
-            }),
-          },
-        ];
+        if (res.every((item) => item.success)) {
+          const resArr = res.map((item) => {
+            return item.rates[currTo];
+          });
+          this.chartOptions.series = [
+            {
+              data: resArr,
+            },
+          ];
+        } else {
+          this.errorMsg = res.map((item) => item.error.info)[0];
+          this.openErrorModal(this.errModal);
+        }
+        this.eventService.broadcast(reserved.isLoading, false);
       },
       error: (err) => {
-        console.log(err);
+        this.errorMsg = err.message;
+        this.openErrorModal(this.errModal);
+        this.eventService.broadcast(reserved.isLoading, false);
       },
     });
     this.subscribes.push(sub);
   }
+
+  updateChartData(val: string) {
+    this.changedFromValue = JSON.parse(val).fromCurr;
+    this.changedToValue = JSON.parse(val).toCurr;
+    if (this.changedToValue)
+      this.getCurrHistory(this.changedFromValue, this.changedToValue);
+    else this.getCurrHistory('', this.params.toCurr);
+  }
+
+  openErrorModal(content: any) {
+    this.modalService.open(content, { centered: true });
+  }
+
   ngOnDestroy(): void {
     this.subscribes && this.subscribes.forEach((s) => s.unsubscribe());
   }

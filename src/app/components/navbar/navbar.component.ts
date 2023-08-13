@@ -12,11 +12,20 @@ export class NavbarComponent {
   isNavbarCollapsed: boolean = false;
 
   goToDetails(fromCurr: string, toCurr: string) {
-    this.router.navigate(['/details'], {
-      queryParams: {
-        fromCurr,
-        toCurr,
-      },
-    });
+    if (toCurr === 'USD') {
+      this.router.navigate(['/details/eur-usd'], {
+        queryParams: {
+          fromCurr,
+          toCurr,
+        },
+      });
+    } else {
+      this.router.navigate(['/details/eur-gbp'], {
+        queryParams: {
+          fromCurr,
+          toCurr,
+        },
+      });
+    }
   }
 }

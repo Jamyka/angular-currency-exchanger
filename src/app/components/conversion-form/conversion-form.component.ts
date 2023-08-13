@@ -1,4 +1,11 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IConvertCurrencyForm } from 'src/app/models/IConvertCurrencyForm';
 import {
@@ -11,19 +18,22 @@ import { HomeRoutingModule } from 'src/app/pages/home/home-routing.module';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Output, EventEmitter } from '@angular/core';
 import { FixerService } from 'src/app/services/fixer.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { EventsService } from 'src/app/services/events.service';
 import { reserved } from 'src/app/models/reservedWord';
 import { Subscription } from 'rxjs';
+import { NgbModal, NgbModalRef, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-conversion-form',
   standalone: true,
+  encapsulation: ViewEncapsulation.None,
   imports: [
     CommonModule,
     HomeRoutingModule,
     ReactiveFormsModule,
     NgSelectModule,
+    NgbModule,
   ],
   templateUrl: './conversion-form.component.html',
   styleUrls: ['./conversion-form.component.scss'],
@@ -32,16 +42,20 @@ export class ConversionFormComponent implements OnInit, OnDestroy {
   constructor(
     private api: FixerService,
     private router: Router,
-    private eventService: EventsService
+    private route: ActivatedRoute,
+    private eventService: EventsService,
+    private modalService: NgbModal
   ) {}
   @Input() pageType: 'home' | 'detalis' = 'home';
   @Input() title!: string;
   @Output() valuesChangeEvent = new EventEmitter<string>();
   @Output() ratesChangeEvent = new EventEmitter<string>();
+  @ViewChild('content') errModal!: NgbModalRef;
   subscribes: Subscription[] = [];
 
   convertToRate!: number;
   conversionResult!: number;
+  errorMsg!: string;
 
   ConvertCurrencyFG: FormGroup<IConvertCurrencyForm> =
     new FormGroup<IConvertCurrencyForm>({
@@ -53,7 +67,23 @@ export class ConversionFormComponent implements OnInit, OnDestroy {
   rates: { currencyCode: string; exchangeRate: number }[] = [];
 
   ngOnInit(): void {
+    this.route.queryParams.subscribe((params) => {
+      if (this.pageType === 'detalis') {
+        this.fgControls.fromCurr.patchValue(params['fromCurr']);
+        this.fgControls.toCurr.patchValue(params['toCurr']);
+      }
+    });
     this.getExchangeRates();
+
+    this.fgControls.amount.valueChanges.subscribe((res) => {
+      if (res == null || res <= 0) {
+        this.fgControls.fromCurr.disable();
+        this.fgControls.toCurr.disable();
+      } else {
+        this.fgControls.fromCurr.enable();
+        this.fgControls.toCurr.enable();
+      }
+    });
   }
 
   get fgControls() {
@@ -64,19 +94,25 @@ export class ConversionFormComponent implements OnInit, OnDestroy {
     this.eventService.broadcast(reserved.isLoading, true);
     const sub = this.api.getRates().subscribe({
       next: (res) => {
-        for (const currencyCode in res.rates) {
-          this.rates.push({
-            currencyCode: currencyCode,
-            exchangeRate: res.rates[currencyCode],
-          });
+        if (res.success) {
+          for (const currencyCode in res.rates) {
+            this.rates.push({
+              currencyCode: currencyCode,
+              exchangeRate: res.rates[currencyCode],
+            });
+          }
+          this.ratesChangeEvent.emit(JSON.stringify(this.rates));
+          this.findToExchangeRate();
+        } else {
+          this.errorMsg = res.error.info;
+          this.openErrorModal(this.errModal);
         }
-        this.ratesChangeEvent.emit(JSON.stringify(this.rates));
-
-        this.findToExchangeRate();
         this.eventService.broadcast(reserved.isLoading, false);
       },
       error: (err) => {
-        console.log(err);
+        this.errorMsg = err.message;
+        this.openErrorModal(this.errModal);
+        this.eventService.broadcast(reserved.isLoading, false);
       },
     });
     this.subscribes.push(sub);
@@ -90,13 +126,20 @@ export class ConversionFormComponent implements OnInit, OnDestroy {
   }
 
   swapValues() {
-    const fromValue = this.fgControls.fromCurr.getRawValue();
-    const toValue = this.fgControls.toCurr.getRawValue();
-    this.fgControls.fromCurr.patchValue(toValue);
-    this.fgControls.toCurr.patchValue(fromValue);
-    this.findToExchangeRate();
-    this.emitAmountValue();
-    this.conversionResult = 0;
+    if (
+      this.fgControls.amount.value == null ||
+      this.fgControls.amount.value <= 0
+    ) {
+      return;
+    } else {
+      const fromValue = this.fgControls.fromCurr.getRawValue();
+      const toValue = this.fgControls.toCurr.getRawValue();
+      this.fgControls.fromCurr.patchValue(toValue);
+      this.fgControls.toCurr.patchValue(fromValue);
+      this.findToExchangeRate();
+      this.emitAmountValue();
+      this.conversionResult = 0;
+    }
   }
 
   findToExchangeRate() {
@@ -129,6 +172,9 @@ export class ConversionFormComponent implements OnInit, OnDestroy {
       +this.ConvertCurrencyFG.getRawValue().amount! * this.convertToRate;
   }
 
+  openErrorModal(content: any) {
+    this.modalService.open(content, { centered: true });
+  }
   ngOnDestroy(): void {
     this.subscribes && this.subscribes.forEach((s) => s.unsubscribe());
   }
